@@ -11,6 +11,8 @@ import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const CARD_PROPERTY = {
    borderRadius: 3,
@@ -19,7 +21,10 @@ const CARD_PROPERTY = {
 };
 
 const Products = () => {
+   const router = useRouter();
+
    const [products, setProducts] = useState([]);
+   console.log(products);
    const [imageSrc, setImageSrc] = useState("");
 
    useEffect(() => {
@@ -38,12 +43,28 @@ const Products = () => {
             console.error("Error fetching data:", error);
          });
    }, []);
+   const handleDelete = (id) => {
+      //console.log("delete:", id);
+      if (window.confirm("Are you sure you want to delete")) {
+         axios
+            .delete(`http://localhost:3001/products/${id}`)
+            .then((response) => {
+               // Handle successful deletion, e.g., by updating the UI or navigating to a different page.
+               console.log("Product deleted:", response.data);
+               router.refresh();
+            })
+            .catch((error) => {
+               // Handle error, e.g., display an error message to the user.
+               console.error("Error deleting product:", error);
+            });
+      }
+   };
 
    return (
       <Container>
          <Grid container spacing={4} margin={1} padding={3}>
             {products.map((product, index) => (
-               <Grid item xs={12} sm={12} md={4} lg={4} key={index}>
+               <Grid item xs={12} sm={12} md={4} lg={4} key={product._id}>
                   <Card
                      sx={{
                         ...CARD_PROPERTY,
@@ -55,7 +76,8 @@ const Products = () => {
                      <CardMedia
                         component="img"
                         alt="Product Image"
-                        height="180"
+                        height="100"
+                        width="100"
                         src={`http://localhost:3001/products/${product?.image}`}
                      />
 
@@ -74,8 +96,14 @@ const Products = () => {
                         </Typography>
                      </CardContent>
                      <CardActions sx={{ pt: 0, px: 3, pb: 3 }}>
-                        <Button size="small">Share</Button>
-                        <Button size="small">Learn More</Button>
+                        <Link href={`/edit/${product._id}`}>Edit</Link>
+                        <Button
+                           onClick={() => {
+                              handleDelete(product._id);
+                           }}
+                        >
+                           Delete
+                        </Button>
                      </CardActions>
                   </Card>
                </Grid>
